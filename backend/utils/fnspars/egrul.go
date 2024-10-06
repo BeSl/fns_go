@@ -46,8 +46,8 @@ type FullInfoContractor struct {
 	Name     string    `json:"name"`
 	Director string    `json:"dir"`
 	FullName string    `json:"full_name"`
-	DateChek time.Time `json:"date"`
-	PDF      []byte    `json:"pdf"`
+	DateChek time.Time `json:"-"`
+	PDF      []byte    `json:"-"`
 }
 
 type FnsChekContractor struct {

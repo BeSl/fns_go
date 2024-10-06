@@ -11,7 +11,7 @@ func main() {
 	// query := "7707083893" // пример ИНН
 	app := gofr.New()
 
-	app.GET("/check/{inn}", CheckHandler)
+	app.GET("/checkfns", CheckHandler)
 	app.Run()
 }
 
