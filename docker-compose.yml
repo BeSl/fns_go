@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  frontend:
+    build: ./ui
+    ports: 
+      - 3000:3000
+    depends_on: 
+      - backend
+  backend:
+    build: ./backend
+    ports: 
+      - 9000:9000

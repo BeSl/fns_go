@@ -11,3 +11,4 @@ npm run dev
 
 вся проверка происходит на беке /backend
 
+docker-compose up -d
