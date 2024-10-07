@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
@@ -91,8 +93,8 @@ export default function CompanyInfo() {
       <div className="bg-sky-600 text-white p-4">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center">
-            <Image
-              src="/placeholder.svg?height=40&width=40"
+          <Image
+            src="/logo.jpg"
               alt="Логотип сайта"
               width={40}
               height={40}
@@ -186,7 +188,7 @@ export default function CompanyInfo() {
                     </div>
                   )}
                   {(result.status !== 'success' || result.type !== 'fns' || typeof result.result === 'string') && (
-                    <p>Результат: {result.result}</p>
+                    <p>Результат: {JSON.stringify(result.result) }</p>
                   )}
                 </CardContent>
               </Card>

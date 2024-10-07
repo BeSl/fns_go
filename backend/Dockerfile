@@ -1,15 +1,15 @@
-FROM golang:latest
+FROM golang:1.22
 
-WORKDIR /usr/app
-
-COPY go.mod go.sum ./
-
-RUN go mod download
-
+RUN mkdir /src/
+WORKDIR /src/
 COPY . .
+RUN go get ./...
+RUN go build -ldflags "-linkmode external -extldflags -static" -a main.go
 
-RUN go build
-
+FROM alpine:latest
+RUN apk add --no-cache tzdata ca-certificates
+COPY --from=0 /src/main /main
+COPY --from=0 /src/configs /configs
 EXPOSE 9000
 
-CMD ["./golang-nextjs-docker"]
+CMD ["/main"]
