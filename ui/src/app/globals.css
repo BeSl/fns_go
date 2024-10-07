@@ -5,6 +5,14 @@
 @tailwind components;
 @tailwind utilities;
 
+.border-l-4 {
+  border-left-width: 4px;
+}
+
+.border-green-500 {
+  border-color: #10B981;
+}
+
 :root {
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;

@@ -6,8 +6,11 @@ import { useState, useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Toaster } from "@/components/ui/toaster"
+import { useToast } from "@/hooks/use-toast"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { AlertCircle, CheckCircle, Mail, Loader2, X } from 'lucide-react'
+import { checkCompany } from '../../app/actions'
 
 type FNSResult = {
   data: {
@@ -29,48 +32,19 @@ type CheckResult = {
 export default function CompanyInfo() {
   const [inn, setInn] = useState('')
   const [results, setResults] = useState<CheckResult[]>([])
+  const { toast } = useToast()
 
-  const checkCompany = useCallback(async (type: 'fns' | 'giis') => {
-    const newResult: CheckResult = {
-      date: new Date().toISOString(),
-      result: 'Получаем данные от сервиса...',
-      status: 'loading',
-      type
-    }
-    setResults(prev => [...prev, newResult])
-
-    const resultIndex = results.length
-
-    try {
-      const response = await Promise.race([
-        fetch(`http://localhost:9001/check${type}?inn=${inn}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        }),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Timeout')), 10000)
-        )
-      ])
-
-      if (!response || !(response instanceof Response) || !response.ok) {
-        throw new Error('Network response was not ok')
-      }
-
-      const data = await response.json()
-      setResults(prev => prev.map((item, index) => 
-        index === resultIndex 
-          ? { ...item, result: data, status: 'success' }
-          : item
-      ))
-    } catch (error) {
-      setResults(prev => prev.map((item, index) => 
-        index === resultIndex 
-          ? { ...item, result: 'Произошла ошибка при получении данных', status: 'error' }
-          : item
-      ))
-    }
-  }, [inn, results.length])
-
+  const handleCheckCompany = async (type: 'fns' | 'giis') => {
+    toast({
+      title: "Запрос принят",
+      description: "Подождите...",
+      duration: 3000,
+      className: "border-l-4 border-green-500",
+    })
+    const result = await checkCompany(type, inn)
+    setResults(prev => [...prev, result])
+  }
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       setResults(prev => prev.map(item => 
@@ -123,13 +97,13 @@ export default function CompanyInfo() {
               </span>
               <div className="flex space-x-2">
                 <Button 
-                  onClick={() => checkCompany('fns')}
+                  onClick={() => handleCheckCompany('fns')}
                   className="flex-1 bg-sky-500 hover:bg-sky-600"
                 >
                   ФНС
                 </Button>
                 <Button 
-                  onClick={() => checkCompany('giis')}
+                  onClick={() => handleCheckCompany('giis')}
                   className="flex-1 bg-sky-500 hover:bg-sky-600"
                 >
                   ГИИС

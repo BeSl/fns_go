@@ -11,11 +11,12 @@ func main() {
 	// query := "7707083893" // пример ИНН
 	app := gofr.New()
 
-	app.GET("/checkfns", CheckHandler)
+	app.GET("/checkfns", FNSCheckHandler)
+	app.GET("/checkgiis", GIISCheckHandler)
 	app.Run()
 }
 
-func CheckHandler(c *gofr.Context) (interface{}, error) {
+func FNSCheckHandler(c *gofr.Context) (interface{}, error) {
 	inn := c.Param("inn")
 	if inn == "" {
 		c.Log("INN came empty")
@@ -25,4 +26,13 @@ func CheckHandler(c *gofr.Context) (interface{}, error) {
 	res, err := fns.GetFullInfoContractor()
 
 	return res, err
+}
+
+func GIISCheckHandler(c *gofr.Context) (interface{}, error) {
+	inn := c.Param("inn")
+	if inn == "" {
+		c.Log("INN came empty")
+	}
+
+	return "в разработке", nil
 }
