@@ -49,7 +49,7 @@ type FullInfoContractor struct {
 	Director string    `json:"dir"`
 	FullName string    `json:"full_name"`
 	DateChek time.Time `json:"-"`
-	PDF_url  string    `json:"dpf_url"`
+	PDF_url  string    `json:"pdf_url"`
 }
 
 type FnsChekContractor struct {
@@ -200,8 +200,8 @@ func (fpars *FnsChekContractor) getPDFContractor(token string) (string, error) {
 
 func savePDF(inn string, body []byte) (string, error) {
 	//file name = inn + date now
-	filepath := fmt.Sprintf("files/vypiska_%s_%s.pdf", inn, time.Now().Format("2006_01_02"))
-	pdfFile, err := os.Create(filepath)
+	filepath := fmt.Sprintf("vypiska_%s_%s.pdf", inn, time.Now().Format("2006_01_02"))
+	pdfFile, err := os.Create("files/" + filepath)
 	if err != nil {
 		return "", err
 	}

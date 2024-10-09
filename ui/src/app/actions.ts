@@ -3,13 +3,13 @@
 import { revalidatePath } from 'next/cache'
 
 type FNSResult = {
-  data: {
+  
     ogrn: string
     inn: string
     name: string
     dir: string
     full_name: string
-  }
+  
 }
 
 type CheckResult = {
@@ -21,7 +21,8 @@ type CheckResult = {
 
 export async function checkCompany(type: 'fns' | 'giis', inn: string): Promise<CheckResult> {
   try {
-    const response = await fetch(`http://backend:9000/check${type}?inn=${inn}`, {
+    const response = await fetch(`http://backend:9000/check${type}/${inn}`, {
+      // const response = await fetch(`http://127.0.0.1:9001/check${type}/${inn}`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     })
@@ -30,9 +31,8 @@ export async function checkCompany(type: 'fns' | 'giis', inn: string): Promise<C
     if (!response.ok) {
       throw new Error('Network response was not ok')
     }
-
     const data = await response.json()
-    
+    console.log(data)
     revalidatePath('/')
 
     return {
