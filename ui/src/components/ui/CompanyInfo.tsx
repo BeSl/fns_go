@@ -4,23 +4,24 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import Image from 'next/image'
-import { Input } from "@/components/ui/input"
+// import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Toaster } from "@/components/ui/toaster"
+// import { Toaster } from "@/components/ui/toaster"
 import { useToast } from "@/hooks/use-toast"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+// import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { AlertCircle, CheckCircle, Mail, Loader2, X } from 'lucide-react'
 import { checkCompany } from '../../app/actions'
 import { motion, AnimatePresence } from 'framer-motion'
+import { InputRow } from './InputRow'
+import { ResultCard } from './ResultCard'
 
 type FNSResult = {
-  data: {
     ogrn: string
     inn: string
     name: string
     dir: string
-    full_name: string
-  }
+    full_name: string,
+    pdf_url: string
 }
 
 type CheckResult = {
@@ -36,7 +37,7 @@ export default function CompanyInfo() {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 
-  const handleCheckCompany = async (type: 'fns' | 'giis') => {
+  const handleCheckCompany = async (type: 'fns' | 'giis', inn: string) => {
     setIsLoading(true)
     toast({
       title: "Запрос принят",
@@ -58,7 +59,7 @@ export default function CompanyInfo() {
       setIsLoading(false)
     }
   }
-  
+    
   useEffect(() => {
     const timer = setTimeout(() => {
       setResults(prev => prev.map(item => 
@@ -70,66 +71,27 @@ export default function CompanyInfo() {
 
     return () => clearTimeout(timer)
   }, [results])
-
+  
   const clearResults = () => {
     setResults([])
   }
 
   return (
     <div className="min-h-screen flex flex-col bg-sky-50">
-      {/* Баннер с информацией о сайте и логотипом */}
       <div className="bg-sky-600 text-white p-4">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center">
-          <Image
-            src="/logo.jpg"
-              alt="Логотип сайта"
-              width={40}
-              height={40}
-              className="mr-4"
-            />
+          <Image src="/logo.jpg" alt="Логотип сайта" width={40} height={40} className="mr-4"/>
             <h1 className="text-2xl font-bold">Информация о юридических лицах</h1>
           </div>
           <p className="hidden md:block">Проверка ИНН в базах ФНС и ГИИС</p>
         </div>
       </div>
-
+      
       {/* Основной контент */}
       <div className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
-          <div className="space-y-4">
-            <Input
-              type="text"
-              placeholder="Введите ИНН"
-              value={inn}
-              onChange={(e) => setInn(e.target.value)}
-              className="border-sky-200 focus:border-sky-400 focus:ring-sky-400"
-            />
-            <div className="relative border border-sky-300 rounded-lg p-4 pt-6">
-              <span className="absolute -top-3 left-4 bg-sky-50 px-2 text-sm text-sky-600 font-medium">
-                Доступные проверки
-              </span>
-              <div className="flex space-x-2">
-                <Button 
-                  onClick={() => handleCheckCompany('fns')}
-                  className="flex-1 bg-sky-500 hover:bg-sky-600 transition-colors duration-200"
-                  disabled={isLoading}
-                  >
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  ФНС
-                </Button>
-                <Button 
-                  onClick={() => handleCheckCompany('giis')}
-                  className="flex-1 bg-sky-500 hover:bg-sky-600 transition-colors duration-200"
-                  disabled={isLoading}
-                  >
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  ГИИС
-                </Button>
-              </div>
-            </div>
-          </div>
-
+          <InputRow onCheck={handleCheckCompany} isLoading={isLoading} />
           {results.length > 0 && (
             <div className="flex justify-end mb-2">
               <Button
@@ -146,46 +108,7 @@ export default function CompanyInfo() {
 
           <AnimatePresence>
             {results.map((result, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className="w-2/3 mx-auto"
-              >
-                <Card 
-                  className={`${
-                    result.status === 'error' ? 'bg-red-100' : 'bg-green-100'
-                  } transition-colors duration-200`}
-                >
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      {result.status === 'error' ? (
-                        <AlertCircle className="mr-2 h-4 w-4 text-red-500" />
-                      ) : (
-                        <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
-                      )}
-                      Результат проверки в {result.type.toUpperCase()}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Дата: {new Date(result.date).toLocaleString()}</p>
-                    {result.status === 'success' && result.type === 'fns' && typeof result.result !== 'string' && (
-                      <div className="mt-2 space-y-2">
-                        <p><strong>ОГРН:</strong> {result.result.data.ogrn}</p>
-                        <p><strong>ИНН:</strong> {result.result.data.inn}</p>
-                        <p><strong>Наименование:</strong> {result.result.data.name}</p>
-                        <p><strong>Руководитель:</strong> {result.result.data.dir}</p>
-                        <p><strong>Полное наименование:</strong> {result.result.data.full_name}</p>
-                      </div>
-                    )}
-                    {(result.status !== 'success' || result.type !== 'fns' || typeof result.result === 'string') && (
-                      <p>Результат: {JSON.stringify(result.result)}</p>
-                    )}
-                  </CardContent>
-                </Card>
-              </motion.div>
+              <ResultCard key={index} result={result} index={index} />
             ))}
           </AnimatePresence>
         </div>

@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"srv_users/internal/config"
 	"time"
 )
 
@@ -47,7 +49,7 @@ type FullInfoContractor struct {
 	Director string    `json:"dir"`
 	FullName string    `json:"full_name"`
 	DateChek time.Time `json:"-"`
-	PDF      []byte    `json:"-"`
+	PDF_url  string    `json:"pdf_url"`
 }
 
 type FnsChekContractor struct {
@@ -72,7 +74,13 @@ func (fpars *FnsChekContractor) GetFullInfoContractor() (FullInfoContractor, err
 		if err != nil {
 			return FullInfoContractor{}, fmt.Errorf("ошибка в получении выписки ЕГРОЮЛ: %v", err)
 		}
-		return FullInfoContractor{Ogrn: data.Rows[0].Ogrn, Inn: data.Rows[0].Inn, Name: data.Rows[0].Name, Director: data.Rows[0].Director, FullName: data.Rows[0].FullName, PDF: pdf}, nil
+		cfg := config.NewConfig()
+		return FullInfoContractor{Ogrn: data.Rows[0].Ogrn,
+			Inn:      data.Rows[0].Inn,
+			Name:     data.Rows[0].Name,
+			Director: data.Rows[0].Director,
+			FullName: data.Rows[0].FullName,
+			PDF_url:  cfg.Service_URL + ":" + cfg.Port + "/" + cfg.PDF_PATH_URL + "/" + pdf}, nil
 	}
 }
 
@@ -103,7 +111,7 @@ func (fpars *FnsChekContractor) chekContractor() (DataStruct, error) {
 		return DataStruct{}, fmt.Errorf("Ошибка обработки ответа: %v", err)
 	}
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(SLEEP_TIME * time.Second)
 	// Шаг 2: Ожидание и получение результатов
 	resultURL := fmt.Sprintf("%ssearch-result/%s", FNS_URI, response.T)
 
@@ -134,46 +142,74 @@ type DataPDF struct {
 	Date time.Time `json:"date_cheked"`
 }
 
-func (fpars *FnsChekContractor) getPDFContractor(token string) ([]byte, error) {
+func (fpars *FnsChekContractor) getPDFContractor(token string) (string, error) {
 
 	pdfURL := fmt.Sprintf("%svyp-request/%s", FNS_URI, token)
 	PdfReq, err := http.NewRequest("GET", pdfURL, nil)
 	if err != nil {
 		c_err := fmt.Errorf("ошибка создания запроса на PDF: %v", err)
-		return nil, c_err
+		return "", c_err
 	}
+
 	client := &http.Client{}
-	// _, err := client.Do(PdfReq)
-	// defer pdfResp.Body.Close()
-	//TODO: add chek status
-	time.Sleep(3 * time.Second)
+
+	time.Sleep(SLEEP_TIME * time.Second)
 
 	pdfURL = fmt.Sprintf("%svyp-status/%s", FNS_URI, token)
 
-	_, err = http.NewRequest("GET", pdfURL, nil)
-	if err != nil {
-		return nil, fmt.Errorf("ошибка проверки состояния запроса на PDF: %v", err)
+	// tempReq, err := http.NewRequest("GET", pdfURL, nil)
+	// if err != nil {
+	// 	return "", fmt.Errorf("ошибка проверки состояния запроса на PDF: %v", err)
+	// }
+	// client = &http.Client{}
+	statusResponse, err := client.Do(PdfReq)
+
+	defer statusResponse.Body.Close()
+	body, _ := io.ReadAll(statusResponse.Body)
+	var response ResponseStruct
+	if err := json.Unmarshal(body, &response); err != nil {
+		return "", fmt.Errorf("Ошибка обработки ответа: %v", err)
 	}
 
-	_, err = http.NewRequest("GET", fmt.Sprintf("%svyp-download/%s", FNS_URI, token), nil)
+	PdfReq, err = http.NewRequest("GET", fmt.Sprintf("%svyp-download/%s", FNS_URI, response.T), nil)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка проверки состояния запроса на PDF: %v", err)
+		return "", fmt.Errorf("ошибка проверки состояния запроса на PDF: %v", err)
 	}
 
 	pdfResp, err := client.Do(PdfReq)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка проверки состояния запроса на PDF: %v", err)
+		return "", fmt.Errorf("ошибка проверки состояния запроса на PDF: %v", err)
 	}
 
 	defer pdfResp.Body.Close()
 
 	if pdfResp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("ошибка: ожидался статус 200, получен статус %d", pdfResp.StatusCode)
+		return "", fmt.Errorf("ошибка: ожидался статус 200, получен статус %d", pdfResp.StatusCode)
 	}
 
-	body, _ := io.ReadAll(pdfResp.Body)
-	return body, nil
+	body, _ = io.ReadAll(pdfResp.Body)
+	filepath, err := savePDF(fpars.Inn, body)
 
+	if err != nil {
+		return "", fmt.Errorf("ошибка сохранения файла %v", err)
+	}
+
+	return filepath, nil
+
+}
+
+func savePDF(inn string, body []byte) (string, error) {
+	//file name = inn + date now
+	filepath := fmt.Sprintf("vypiska_%s_%s.pdf", inn, time.Now().Format("2006_01_02"))
+	pdfFile, err := os.Create("files/" + filepath)
+	if err != nil {
+		return "", err
+	}
+
+	defer pdfFile.Close()
+	io.Copy(pdfFile, bytes.NewReader(body))
+
+	return filepath, nil
 }
 
 // // Шаг 5: Сохранение PDF на диск

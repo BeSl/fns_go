@@ -4,7 +4,25 @@ go 1.22
 
 toolchain go1.22.8
 
-require gofr.dev v1.22.0
+require (
+	github.com/rs/cors v1.11.1
+	gofr.dev v1.22.0
+	gorm.io/driver/sqlite v1.5.6
+	gorm.io/gorm v1.25.12
+)
+
+require (
+	github.com/andybalholm/brotli v1.0.5 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-runewidth v0.0.15 // indirect
+	github.com/mattn/go-sqlite3 v1.14.22 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/valyala/bytebufferpool v1.0.0 // indirect
+	github.com/valyala/fasthttp v1.51.0 // indirect
+	github.com/valyala/tcplisten v1.0.0 // indirect
+)
 
 require (
 	cloud.google.com/go v0.115.1 // indirect
@@ -27,6 +45,7 @@ require (
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
+	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect

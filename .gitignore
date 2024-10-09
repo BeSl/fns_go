@@ -1,0 +1,6 @@
+*local.db
+*_debug_bin*
+*.pdf
+
+*/.next/*
+*/node_modules/*

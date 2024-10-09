@@ -1,38 +1,21 @@
 package main
 
 import (
-	"srv_users/utils/fnspars"
-
-	"gofr.dev/pkg/gofr"
+	"log"
+	"srv_users/internal/app"
+	"srv_users/internal/config"
+	"srv_users/internal/routes"
 )
+
+const pdfURL = "pdf"
 
 func main() {
 
+	config := config.NewConfig()
 	// query := "7707083893" // пример ИНН
-	app := gofr.New()
 
-	app.GET("/checkfns", FNSCheckHandler)
-	app.GET("/checkgiis", GIISCheckHandler)
-	app.Run()
-}
+	server := app.NewAppServer(*config)
+	routes.RegisterRoutes(server)
 
-func FNSCheckHandler(c *gofr.Context) (interface{}, error) {
-	inn := c.Param("inn")
-	if inn == "" {
-		c.Log("INN came empty")
-	}
-
-	fns := fnspars.NewFNSParse(inn)
-	res, err := fns.GetFullInfoContractor()
-
-	return res, err
-}
-
-func GIISCheckHandler(c *gofr.Context) (interface{}, error) {
-	inn := c.Param("inn")
-	if inn == "" {
-		c.Log("INN came empty")
-	}
-
-	return "в разработке", nil
+	log.Fatal(server.StartServer())
 }
