@@ -2,21 +2,22 @@ package storage
 
 import (
 	"fmt"
+	"srv_users/internal/config"
 	"srv_users/internal/models/query"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-var (
+type DBStore struct {
 	DBConn *gorm.DB
-)
+}
 
-func NewStorage() error {
+func NewStorage(cfg config.AppConfig) *DBStore {
 	var err error
-	DBConn, err := gorm.Open(sqlite.Open("local.db"))
+	DBConn, err := gorm.Open(sqlite.Open(cfg.DbPath))
 
-	gorm.Open(sqlite.Open("local.db"))
+	gorm.Open(sqlite.Open(cfg.DbPath))
 	if err != nil {
 		panic("failed to connect database")
 	}
@@ -25,12 +26,8 @@ func NewStorage() error {
 	DBConn.AutoMigrate(&query.QueryHistory{})
 
 	fmt.Println("Database Migrated")
-	return nil
+	return &DBStore{
+		DBConn: DBConn,
+	}
 
-}
-
-func DBConnndb() *gorm.DB {
-	DBConn, _ := gorm.Open(sqlite.Open("local.db"))
-
-	return DBConn
 }
