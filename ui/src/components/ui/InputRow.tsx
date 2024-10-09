@@ -6,9 +6,10 @@ import { Loader2 } from 'lucide-react'
 interface InputRowProps {
   onCheck: (type: 'fns' | 'giis', inn: string) => void
   isLoading: boolean
+  isAuthenticated: boolean
 }
 
-export function InputRow({ onCheck, isLoading }: InputRowProps) {
+export function InputRow({ onCheck, isLoading, isAuthenticated }: InputRowProps) {
   const [inn, setInn] = useState('')
 
   return (
@@ -33,14 +34,16 @@ export function InputRow({ onCheck, isLoading }: InputRowProps) {
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             ФНС
           </Button>
-          <Button 
-            onClick={() => onCheck('giis', inn)}
-            className="flex-1 bg-sky-500 hover:bg-sky-600 transition-colors duration-200"
-            disabled={isLoading}
-          >
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            ГИИС
-          </Button>
+          {isAuthenticated && (
+            <Button 
+              onClick={() => onCheck('giis', inn)}
+              className="flex-1 bg-sky-500 hover:bg-sky-600 transition-colors duration-200"
+              disabled={isLoading}
+            >
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              ГИИС
+            </Button>
+          )}
         </div>
       </div>
     </div>

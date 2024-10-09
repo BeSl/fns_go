@@ -2,18 +2,17 @@
 
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
-// import { Input } from "@/components/ui/input"
+import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
-// import { Toaster } from "@/components/ui/toaster"
 import { useToast } from "@/hooks/use-toast"
-// import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { AlertCircle, CheckCircle, Mail, Loader2, X } from 'lucide-react'
-import { checkCompany } from '../../app/actions'
-import { motion, AnimatePresence } from 'framer-motion'
-import { InputRow } from './InputRow'
-import { ResultCard } from './ResultCard'
+import { Mail,  X } from 'lucide-react'
+import { checkCompany } from '../app/actions'
+import { AnimatePresence } from 'framer-motion'
+import { InputRow } from './ui/InputRow'
+import { ResultCard } from './ui/ResultCard'
+import { logout } from '../lib/auth'
 
 type FNSResult = {
     ogrn: string
@@ -35,7 +34,14 @@ export default function CompanyInfo() {
   const [inn, setInn] = useState('')
   const [results, setResults] = useState<CheckResult[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const { toast } = useToast()
+  const router = useRouter()
+
+  useEffect(() => {
+    const token = getToken()
+    setIsAuthenticated(!!token)
+  }, [])
 
   const handleCheckCompany = async (type: 'fns' | 'giis', inn: string) => {
     setIsLoading(true)
@@ -55,6 +61,9 @@ export default function CompanyInfo() {
         duration: 5000,
         className: "border-l-4 border-red-500",
       })
+      if ((error as Error).message === 'Не авторизован') {
+        router.push('/auth/login')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -75,6 +84,16 @@ export default function CompanyInfo() {
   const clearResults = () => {
     setResults([])
   }
+  
+  const handleLogout = () => {
+    logout()
+    setIsAuthenticated(false)
+    router.push('/')
+  }
+
+  const handleLogin = () => {
+    router.push('/auth/login')
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-sky-50">
@@ -85,13 +104,17 @@ export default function CompanyInfo() {
             <h1 className="text-2xl font-bold">Информация о юридических лицах</h1>
           </div>
           <p className="hidden md:block">Проверка ИНН в базах ФНС и ГИИС</p>
+          <Button onClick={handleLogout} variant="outline" size="sm">
+              Выйти
+            </Button>
+
         </div>
       </div>
       
       {/* Основной контент */}
       <div className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
-          <InputRow onCheck={handleCheckCompany} isLoading={isLoading} />
+          <InputRow onCheck={handleCheckCompany} isLoading={isLoading} isAuthenticated={isAuthenticated} />
           {results.length > 0 && (
             <div className="flex justify-end mb-2">
               <Button

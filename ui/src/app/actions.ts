@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { getToken } from './lib/auth'
 
 type FNSResult = {
   
@@ -20,11 +21,19 @@ type CheckResult = {
 }
 
 export async function checkCompany(type: 'fns' | 'giis', inn: string): Promise<CheckResult> {
+  const token = getToken()
+  if (!token) {
+    throw new Error('Не авторизован')
+  }
+
   try {
     const response = await fetch(`http://backend:9000/check${type}/${inn}`, {
       // const response = await fetch(`http://127.0.0.1:9001/check${type}/${inn}`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json' 
+      },
     })
   
 
