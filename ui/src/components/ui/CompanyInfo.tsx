@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
@@ -20,7 +20,7 @@ type FNSResult = {
     inn: string
     name: string
     dir: string
-    full_name: string,
+    full_name: string
     pdf_url: string
 }
 
@@ -47,7 +47,7 @@ export default function CompanyInfo() {
     })
     try {
       const result = await checkCompany(type, inn)
-      setResults(prev => [...prev, result])
+      setResults((prev: CheckResult[]) => [...prev, result as CheckResult])
     } catch (error) {
       toast({
         title: "Ошибка",
@@ -107,7 +107,7 @@ export default function CompanyInfo() {
           )}
 
           <AnimatePresence>
-            {results.map((result, index) => (
+            {results.map((result, index: number) => (
               <ResultCard key={index} result={result} index={index} />
             ))}
           </AnimatePresence>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { AlertCircle, CheckCircle, Download } from 'lucide-react'
 import { motion } from 'framer-motion'
