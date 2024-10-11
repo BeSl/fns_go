@@ -13,7 +13,7 @@ import (
 )
 
 const FNS_URI = "https://egrul.nalog.ru/"
-const SLEEP_TIME = 3
+const SLEEP_TIME = 5
 
 // RequestStruct структура для отправки данных запроса
 type RequestStruct struct {
@@ -80,7 +80,7 @@ func (fpars *FnsChekContractor) GetFullInfoContractor() (FullInfoContractor, err
 			Name:     data.Rows[0].Name,
 			Director: data.Rows[0].Director,
 			FullName: data.Rows[0].FullName,
-			PDF_url:  cfg.Service_URL + ":" + cfg.Port + "/" + cfg.PDF_PATH_URL + "/" + pdf}, nil
+			PDF_url:  cfg.Service_URL + ":" + cfg.PortExt + "/" + cfg.PDF_PATH_URL + "/" + pdf}, nil
 	}
 }
 

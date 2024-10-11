@@ -17,7 +17,7 @@ type AppServer struct {
 func NewAppServer(cfg config.AppConfig) *AppServer {
 
 	app := fiber.New(fiber.Config{
-		Prefork:       true,
+		Prefork:       false,
 		CaseSensitive: true,
 		StrictRouting: true,
 		ServerHeader:  "CheCont",

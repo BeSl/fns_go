@@ -11,5 +11,5 @@ RUN apk add --no-cache tzdata ca-certificates
 COPY --from=0 /src/main /main
 COPY --from=0 /src/configs /configs
 EXPOSE 9000
-
+RUN mkdir files
 CMD ["/main"]

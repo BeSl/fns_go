@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"encoding/json"
+	"errors"
+	"fmt"
 	"srv_users/internal/models/query"
 	"srv_users/internal/storage"
 	"srv_users/utils/fnspars"
@@ -18,18 +19,20 @@ func CheckFns(store *storage.DBStore) func(*fiber.Ctx) error {
 		if inn == "" {
 			c.SendStatus(fiber.StatusBadRequest)
 		}
-		res, err := findInCacheFNSQuery(inn, store)
-		if err == nil {
-			return c.SendString(res)
-		}
+		// res, err := findInCacheFNSQuery(inn, store)
+		// if err == nil {
+		// 	return c.SendString(res)
+		// }
 
 		fns := fnspars.NewFNSParse(inn)
 		resData, err := fns.GetFullInfoContractor()
 		if err != nil {
-			c.SendStatus(fiber.StatusBadRequest)
+			c.Context().Logger().Printf(err.Error())
+			fmt.Println(err)
+			return c.SendStatus(fiber.StatusBadRequest) //400 отправляем
 		}
-		par, err := json.Marshal(resData)
-		addCacheQuery(inn, par, store)
+		// par, err := json.Marshal(resData)
+		// addCacheQuery(inn, par, store)
 		return c.JSON(resData)
 	}
 }
@@ -39,13 +42,16 @@ func findInCacheFNSQuery(inn string, db *storage.DBStore) (string, error) {
 	queryname := "checkfns"
 	var dt query.QueryHistory
 	currentDate := time.Now().Format("2006-01-02")
-	db.DBConn.Where("inn = ? AND name_query = ? AND DATE(date) = ?", inn, queryname, currentDate).First(&dt)
+	result := db.DBConn.Where("inn = ? AND name_query = ? AND DATE(date) = ?", inn, queryname, currentDate)
+	//
+	if result.Error != nil {
+		return "", fiber.NewError(200, "not find")
+	}
 
-	// if result.Error != nil {
-	// 	if result.Error != gorm.ErrRecordNotFound {
-	// 		return "", fiber.NewError(200, "not find")
-	// 	}
-	// }
+	err := result.First(&dt)
+	if err != nil && errors.Is(err.Error, gorm.ErrRecordNotFound) {
+		return "", fiber.NewError(200, "not find")
+	}
 
 	if dt.ID != 0 {
 		return dt.DataResponse, nil
